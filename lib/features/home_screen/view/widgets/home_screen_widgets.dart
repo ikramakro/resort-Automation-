@@ -292,7 +292,7 @@ class RoomTile extends ConsumerWidget {
                               Theme.of(context).brightness == Brightness.dark
                                   ? AppColors.darkGreyColor
                                   : AppColors.greyColor,
-                          title: Center(child: Text('Add Room Number')),
+                          title: Center(child: Text('Edit Room Number')),
                           content: Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
