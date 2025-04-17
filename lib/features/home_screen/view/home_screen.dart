@@ -1,6 +1,10 @@
+import 'dart:developer';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:resort_web_app/barrel.dart';
 import 'package:resort_web_app/core/common/widgets/loading_widget.dart';
 import 'package:resort_web_app/features/home_screen/view/widgets/home_screen_widgets.dart';
+import 'package:resort_web_app/main.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 import '../../../theme/theme_controller.dart';
@@ -19,6 +23,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    getFCMToken();
+    configurePushNotifications();
     _controller = SidebarXController(selectedIndex: 0, extended: true);
   }
 
@@ -26,6 +32,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void configurePushNotifications() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Handle notification when app is in foreground
+      log('Message received in foreground: ${message.notification}');
+      showFlutterNotification(message);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle notification when app is in background and user taps on it
+      // _handleNotificationClick(message);
+    });
+  }
+
+  void showFlutterNotification(RemoteMessage message) {
+    // You can use flutter_local_notifications package for web or
+    // show a custom dialog/snackbar for web notifications
+    RemoteNotification? notification = message.notification;
+
+    if (notification != null) {
+      // For web, we'll show an alert dialog (you might want a better UI)
+      showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (_) => AlertDialog(
+          title: Text(notification.title ?? 'Notification'),
+          content: Text(notification.body ?? ''),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(navigatorKey.currentContext!),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  getFCMToken() async {
+    final fcm = await FirebaseMessaging.instance.getToken(
+        vapidKey:
+            'BKLyaWtlGu-LIaSz_jjJgGFaGdJk9a2Bc2t-hXHeVAfnOekquFsj2l5o-opKkxtKgBJrMKqrhmmD6Ys8eKEB9AE');
+    log('token is ${fcm.toString()}');
   }
 
   String _getTitleByIndex(int index) {
@@ -194,20 +243,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               switch (state) {
                 case MainScreenInitialState():
                   return Center(
-                    child: RoomsList(rooms: mainScreenController.roomsList),
+                    child: RoomsList(
+                      rooms: mainScreenController.roomsList,
+                      controller: mainScreenController,
+                    ),
                   );
                 case MainScreenLoadingState():
                   return LoadingWidget(
                     event: mainScreenController.fetchAllRooms,
                     child: RoomsList(
                       rooms: mainScreenController.roomsList,
+                      controller: mainScreenController,
                     ),
                   );
                 case MainScreenDataFetchedState():
-                  return Center(child: RoomsList(rooms: state.roomsList));
+                  return Center(
+                      child: RoomsList(
+                    rooms: state.roomsList,
+                    controller: mainScreenController,
+                  ));
                 case MainScreenLoadedState():
                   return Center(
-                      child: RoomsList(rooms: mainScreenController.roomsList));
+                      child: RoomsList(
+                    rooms: mainScreenController.roomsList,
+                    controller: mainScreenController,
+                  ));
                 case MainScreenErrorState():
                   return Center(child: Text(state.message));
               }

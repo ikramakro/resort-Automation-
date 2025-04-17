@@ -58,11 +58,26 @@ class LogoAndTitle extends StatelessWidget {
                               : AppColors.greyColor,
                       title: Center(child: Text('Add Room Number')),
                       content: Center(
-                        child: SizedBox(
-                          width: 50,
-                          child: TextFormField(
-                            controller: controller.roomNumberController,
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              // width: 50,
+                              child: TextFormField(
+                                controller: controller.roomNumberController,
+                                decoration:
+                                    InputDecoration(hintText: 'Room No.'),
+                              ),
+                            ),
+                            SizedBox(
+                              // width: 50,
+                              child: TextFormField(
+                                controller: controller.roomNameController,
+                                decoration:
+                                    InputDecoration(hintText: 'Room Name.'),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       actions: [
@@ -188,8 +203,9 @@ class LogoAndTitle extends StatelessWidget {
 }
 
 class RoomsList extends StatelessWidget {
-  const RoomsList({super.key, required this.rooms});
+  const RoomsList({super.key, required this.rooms, required this.controller});
   final List<RoomModel> rooms;
+  final MainScreenController controller;
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -197,7 +213,7 @@ class RoomsList extends StatelessWidget {
       itemBuilder: (context, index) {
         return Padding(
           padding: EdgeInsets.only(bottom: 30.0),
-          child: RoomTile(room: rooms[index]),
+          child: RoomTile(room: rooms[index], controller: controller),
         );
       },
     );
@@ -205,8 +221,9 @@ class RoomsList extends StatelessWidget {
 }
 
 class RoomTile extends ConsumerWidget {
-  const RoomTile({super.key, required this.room});
+  const RoomTile({super.key, required this.room, required this.controller});
   final RoomModel room;
+  final MainScreenController controller;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
@@ -215,7 +232,7 @@ class RoomTile extends ConsumerWidget {
             .read(roomPageControllerProvider.notifier)
             .reinitialzeState(room.groupCurrentStatus);
         Navigator.pushNamed(context, RoomPage.pageName, arguments: {
-          'room': room.roomName.toString(),
+          'room': room.roomNumber,
           'groupValue': room.groupCurrentStatus
         });
       },
@@ -264,7 +281,86 @@ class RoomTile extends ConsumerWidget {
                   });
                   break;
                 case 'edit':
-                  // Navigate to edit room screen
+                  showDialog(
+                    context: context,
+                    builder: (context) => Center(
+                      child: SizedBox(
+                        width: 500,
+                        height: 350,
+                        child: AlertDialog(
+                          backgroundColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkGreyColor
+                                  : AppColors.greyColor,
+                          title: Center(child: Text('Add Room Number')),
+                          content: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // SizedBox(
+                                //   // width: 50,
+                                //   child: TextFormField(
+                                //     controller: controller.roomNumberController,
+                                //     decoration:
+                                //         InputDecoration(hintText: 'Room No.'),
+                                //   ),
+                                // ),
+                                SizedBox(
+                                  // width: 50,
+                                  child: TextFormField(
+                                    controller: controller.roomNameController,
+                                    decoration:
+                                        InputDecoration(hintText: 'Room Name.'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Center(
+                                    child: GestureDetector(
+                                      onTap: () => Navigator.pop(context),
+                                      child: Text(
+                                        'Cancel',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Center(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        if (controller.roomNameController.text
+                                            .isNotEmpty) {
+                                          controller.editRoom(
+                                              context,
+                                              room.roomName ?? "",
+                                              room.roomNumber,
+                                              room.groupCurrentStatus);
+                                          Navigator.pop(context);
+                                        } else {}
+                                      },
+                                      child: Text('Edit',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 18,
+                                          )),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+
                   break;
                 case 'delete':
                   ref

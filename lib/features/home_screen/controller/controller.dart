@@ -23,6 +23,7 @@ class MainScreenController extends Notifier<MainScreenStates> {
 
   //..............CONTROLLERS
   final TextEditingController roomNumberController = TextEditingController();
+  final TextEditingController roomNameController = TextEditingController();
   @override
   MainScreenStates build() {
     ref.onDispose(
@@ -54,6 +55,7 @@ class MainScreenController extends Notifier<MainScreenStates> {
     try {
       state = MainScreenLoadingState();
       final roomNumber = roomNumberController.text.trim();
+      final roomName = roomNameController.text.trim();
       //...........CREATE TOPICS
       final topic = 'roomNo/$roomNumber/init';
       if (mqttService.isConnected) {
@@ -64,6 +66,7 @@ class MainScreenController extends Notifier<MainScreenStates> {
         //................ADD ROOM TO FRIESTORE
         await roomRepo.addRoom(RoomModel(
             roomNumber: roomNumber,
+            roomName: roomName,
             groupCurrentStatus: false,
             devices: [
               for (int i = 1; i <= 4; i++)
@@ -79,6 +82,7 @@ class MainScreenController extends Notifier<MainScreenStates> {
             ]));
         // context.showPopUpMessage('Room Added Successfull');
         roomNumberController.clear();
+        roomNameController.clear();
         state = MainScreenLoadedState();
       } else {
         log('mqtt not connected cannot add room');
@@ -87,6 +91,59 @@ class MainScreenController extends Notifier<MainScreenStates> {
         );
       }
     } catch (e) {
+      state = MainScreenErrorState(
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<void> editRoom(BuildContext context, String roomName,
+      String roomNumber, bool groupCurrentStatus) async {
+    try {
+      state = MainScreenLoadingState();
+
+      // If roomNameController or roomNumberController is empty or null, fallback to the passed parameters
+      final newRoomName = roomNameController.text.trim().isEmpty
+          ? roomName
+          : roomNameController.text.trim();
+      final newRoomNumber = roomNumberController.text.trim().isEmpty
+          ? roomNumber
+          : roomNumberController.text.trim();
+      final newGroupValue =
+          groupCurrentStatus; // Assuming you may want to directly use the passed value
+
+      if (newRoomName != roomName || newGroupValue != groupCurrentStatus) {
+        // Update the room details in Firestore
+        await roomRepo.editRoom(RoomModel(
+          roomNumber: newRoomNumber,
+          roomName: newRoomName,
+          groupCurrentStatus: newGroupValue,
+        ));
+
+        // Update MQTT topic if needed
+        final topic = 'roomNo/$newRoomNumber/init';
+        if (mqttService.isConnected) {
+          // Publish updated room information
+          mqttService.publishMessage(
+              topic: topic, message: {'roomNo': newRoomNumber}.toString());
+        } else {
+          log('MQTT not connected, cannot update room');
+        }
+
+        // Re-fetch the rooms list to reflect changes
+        // await fetchAllRooms();
+
+        // Clear the controllers after successful operation
+        roomNameController.clear();
+        roomNumberController.clear();
+        state = MainScreenLoadedState();
+        // context.showPopUpMessage('Room Updated Successfully');
+      } else {
+        state = MainScreenLoadedState();
+        // context.showPopUpMessage('No changes detected');
+      }
+    } catch (e) {
+      log(e.toString());
       state = MainScreenErrorState(
         message: e.toString(),
       );

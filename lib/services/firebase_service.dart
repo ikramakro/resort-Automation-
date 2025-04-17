@@ -22,6 +22,7 @@ class FirebaseService {
           .doc('Room No. ${room.roomNumber}');
 
       roomRef.set({
+        'Name': room.roomName,
         'roomNumber': room.roomNumber,
         'groupValue': room.groupCurrentStatus,
       });
@@ -33,6 +34,24 @@ class FirebaseService {
       }
     } catch (e) {
       log(e.toString());
+    }
+  }
+
+  Future<void> editRoom(RoomModel room) async {
+    try {
+      // Reference to the room document
+      final roomRef = _firestore
+          .collection(roomsCollection)
+          .doc('Room No. ${room.roomNumber}');
+
+      // Update only the specified fields (groupValue, roomNumber, Name)
+      await roomRef.update({
+        'Name': room.roomName,
+        'roomNumber': room.roomNumber,
+        'groupValue': room.groupCurrentStatus,
+      });
+    } catch (e) {
+      log('Error updating room: ${e.toString()}');
     }
   }
 

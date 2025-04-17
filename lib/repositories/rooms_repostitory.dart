@@ -10,6 +10,10 @@ class RoomRepository {
     return await service.addRoom(room);
   }
 
+  editRoom(RoomModel room) async {
+    return await service.editRoom(room);
+  }
+
   Future<List<RoomModel>> fetchAllRooms() async {
     return await service.fetchAllRooms();
   }

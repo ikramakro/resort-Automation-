@@ -2,29 +2,17 @@
 <html>
 
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Khar Resort Web Application">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="resort_web_app">
+  <meta name="apple-mobile-web-app-title" content="Khar Resort">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
@@ -35,26 +23,63 @@
 </head>
 
 <body>
-  <script src="flutter_bootstrap.js" async></script>
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-messaging-compat.js"></script>
 
+  <script>
     // Your web app's Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyDAXdLK2NIQaJ-mhoqI44Y3UCX7NZU1GnU",
-      authDomain: "resort-automation-app-backend.firebaseapp.com",
-      projectId: "resort-automation-app-backend",
-      storageBucket: "resort-automation-app-backend.firebasestorage.app",
-      messagingSenderId: "456492763184",
-      appId: "1:456492763184:web:30867fdadf8df6bde1c5f5"
+      apiKey: 'AIzaSyDAXdLK2NIQaJ-mhoqI44Y3UCX7NZU1GnU',
+      appId: '1:456492763184:web:30867fdadf8df6bde1c5f5',
+      messagingSenderId: '456492763184',
+      projectId: 'resort-automation-app-backend',
+      authDomain: 'resort-automation-app-backend.firebaseapp.com',
+      storageBucket: 'resort-automation-app-backend.firebasestorage.app',
     };
 
     // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
+    const app = firebase.initializeApp(firebaseConfig);
+
+    // Initialize Firebase Messaging
+    const messaging = firebase.messaging();
+
+    // Request permission for notifications
+    function requestNotificationPermission() {
+      console.log('Requesting permission...');
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted.');
+          // Get FCM token
+          messaging.getToken({ vapidKey: 'BKLyaWtlGu-LIaSz_jjJgGFaGdJk9a2Bc2t-hXHeVAfnOekquFsj2l5o-opKkxtKgBJrMKqrhmmD6Ys8eKEB9AE' }).then((currentToken) => {
+            if (currentToken) {
+              console.log('FCM Token:', currentToken);
+              // Send this token to your server for targeting
+            } else {
+              console.log('No registration token available.');
+            }
+          }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+          });
+        } else {
+          console.log('Unable to get permission to notify.');
+        }
+      });
+    }
+
+    // Call this function when you want to request notification permissions
+    // requestNotificationPermission();
+
+    // Handle incoming messages
+    messaging.onMessage((payload) => {
+      console.log('Message received. ', payload);
+      // You can display the notification using Flutter when app is in foreground
+      // This will be handled by your Flutter code
+    });
   </script>
+
+  <!-- Flutter app bootstrap -->
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 
 </html>

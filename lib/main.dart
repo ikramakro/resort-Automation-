@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:resort_web_app/barrel.dart';
 import 'package:resort_web_app/config/route_navigation.dart';
@@ -12,6 +13,8 @@ import 'package:resort_web_app/theme/theme_controller.dart';
 import 'config/service_locator.dart';
 import 'features/home_screen/view/home_screen.dart';
 
+// Define the navigator key
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -24,6 +27,17 @@ void main() async {
       storageBucket: 'resort-automation-app-backend.firebasestorage.app',
     ),
   );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: true,
+    sound: true,
+  );
+  NotificationSettings settings = await messaging.getNotificationSettings();
   //.........SET UP LOCATOR
   await setupLocator();
 
@@ -72,6 +86,7 @@ class _ResortAppState extends ConsumerState<ResortApp> {
     return Builder(builder: (context) {
       final themeMode = ref.watch(themeProvider);
       return MaterialApp(
+        navigatorKey: navigatorKey,
         darkTheme: darkTheme,
         themeMode: themeMode,
         theme: lightTheme,

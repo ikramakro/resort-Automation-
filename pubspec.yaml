@@ -47,6 +47,7 @@ dependencies:
   cloud_firestore: ^5.6.5
   uuid: ^4.5.1
   sidebarx: ^0.17.1
+  firebase_messaging: ^15.2.5
 
 dev_dependencies:
   flutter_test:
