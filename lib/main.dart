@@ -15,6 +15,7 @@ import 'features/home_screen/view/home_screen.dart';
 
 // Define the navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+//updated
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
