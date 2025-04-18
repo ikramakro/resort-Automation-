@@ -58,38 +58,38 @@ class MainScreenController extends Notifier<MainScreenStates> {
       final roomName = roomNameController.text.trim();
       //...........CREATE TOPICS
       final topic = 'roomNo/$roomNumber/init';
-      if (mqttService.isConnected) {
-        //.........PUBLISH TOPIC WITH ROOM NUMBER
-        mqttService.publishMessage(
-            topic: topic, message: {'roomNo': roomNumber}.toString());
+      // if (mqttService.isConnected) {
+      //.........PUBLISH TOPIC WITH ROOM NUMBER
 
-        //................ADD ROOM TO FRIESTORE
-        await roomRepo.addRoom(RoomModel(
-            roomNumber: roomNumber,
-            roomName: roomName,
-            groupCurrentStatus: false,
-            devices: [
-              for (int i = 1; i <= 4; i++)
-                DeviceModel(
-                  deviceId: 'Room $roomNumber Light $i',
-                  status: "0x0200",
-                  attributes: {
-                    'Brigtness': '0x0210',
-                  },
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                )
-            ]));
-        // context.showPopUpMessage('Room Added Successfull');
-        roomNumberController.clear();
-        roomNameController.clear();
-        state = MainScreenLoadedState();
-      } else {
-        log('mqtt not connected cannot add room');
-        state = MainScreenErrorState(
-          message: 'Mqtt not connected cannot add room',
-        );
-      }
+      //................ADD ROOM TO FRIESTORE
+      await roomRepo.addRoom(RoomModel(
+          roomNumber: roomNumber,
+          roomName: roomName,
+          groupCurrentStatus: false,
+          devices: [
+            for (int i = 1; i <= 4; i++)
+              DeviceModel(
+                deviceId: 'Room $roomNumber Light $i',
+                status: "0x0200",
+                attributes: {
+                  'Brigtness': '0x0210',
+                },
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              )
+          ]));
+      mqttService.publishMessage(
+          topic: topic, message: {'roomNo': roomNumber}.toString());
+      // context.showPopUpMessage('Room Added Successfull');
+      roomNumberController.clear();
+      roomNameController.clear();
+      state = MainScreenLoadedState();
+      // } else {
+      //   log('mqtt not connected cannot add room');
+      //   state = MainScreenErrorState(
+      //     message: 'Mqtt not connected cannot add room',
+      //   );
+      // }
     } catch (e) {
       state = MainScreenErrorState(
         message: e.toString(),
